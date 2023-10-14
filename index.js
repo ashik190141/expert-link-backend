@@ -32,6 +32,27 @@ async function run() {
           const result = await usersCollection.insertOne(user);
           res.send(result);
       })
+
+      /* Admin related api */
+        // check admin
+        app.get('/users/admin/:email', async (req, res) => {
+          const email = req?.params?.email;
+          const query = { email: email }
+          const user = await usersCollection.findOne(query);
+          const result = { isAdmin: user?.role === 'admin'}
+          res.send(result);
+      })
+
+      /* Consultant related api */
+        // check consultant
+        app.get('/users/consultant/:email', async (req, res) => {
+          const email = req?.params?.email;
+          const query = { email: email }
+          const user = await usersCollection.findOne(query);
+          console.log(user)
+          const result = { isConsultant: user?.role === 'consultant' && user?.status === 'confirm'}
+          res.send(result);
+      })
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
