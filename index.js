@@ -26,6 +26,8 @@ async function run() {
 
     const usersCollection = client.db('expertLink').collection('users');
     const serviceCollection = client.db('expertLink').collection('services');
+    const bookServicesCollection = client.db('expertLink').collection('book-services');
+    const requestAppointmentCollection = client.db('expertLink').collection('req-appointment');
 
     // common
     // create users
@@ -43,12 +45,12 @@ async function run() {
     })
 
     //all services
-    app.get('/services', async (req, res) => {
-      const query = { status: "Approved"}
-      console.log(query)
-      const result = await serviceCollection.find(query).toArray();
-      res.send(result);
-    })
+    // app.get('/services', async (req, res) => {
+    //   const query = { status: "Approved"}
+    //   console.log(query)
+    //   const result = await serviceCollection.find(query).toArray();
+    //   res.send(result);
+    // })
 
     /* Admin related api */
     // check admin
@@ -119,6 +121,7 @@ async function run() {
       const result = { isConsultant: user?.role === 'consultant' && user?.status === 'confirm' }
       res.send(result);
     })
+      
     //consultant details
     app.get('/consultantdetails/:email', async (req, res) => {
       const email = req.params.email;
@@ -126,19 +129,81 @@ async function run() {
       const result = await usersCollection.findOne(query);
       res.send(result);
     })
+      
       //my services
       app.get('/myServices/:email', async (req, res) => {
       const email = req.params.email;
       const query = { email: email};
       const result = await serviceCollection.find(query).toArray();
       res.send(result);
-    })
+      })
+      
     // add service
     app.post('/consultant/addservice', async(req, res)=>{
       const newService = req.body;
       const result = await serviceCollection.insertOne(newService)
       res.send(result)
-  })
+    })
+      
+      
+    //   customer
+      
+      app.post('/bookServices', async (req, res) => {
+          const bookingService = req.body;
+          const result = await bookServicesCollection.insertOne(bookingService);
+          res.send(result);
+      })
+
+      app.get('/myFavServices/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { email: email};
+            const result = await bookServicesCollection.find(query).toArray();
+            res.send(result);
+      })
+
+      app.post('/requestAppointment', async (req, res) => {
+          const reqInfo = req.body;
+          const result = await requestAppointmentCollection.insertOne(reqInfo);
+          res.send(result);
+      })
+
+      app.get('/myAppointment/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { consultantEmail: email};
+            const result = await requestAppointmentCollection.find(query).toArray();
+            res.send(result);
+      })
+
+      app.patch('/makeRequestAccept/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) };
+            const updatedDoc = {
+            $set: {
+                status: `Ok, You will have appointment with me.`
+            }
+            }
+            const result = await requestAppointmentCollection.updateOne(filter, updatedDoc);
+            res.send(result);
+      })
+
+      app.patch('/makeRequestDelete/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) };
+            const updatedDoc = {
+            $set: {
+                status: `No, i am not available.`
+            }
+            }
+            const result = await requestAppointmentCollection.updateOne(filter, updatedDoc);
+            res.send(result);
+      })
+
+      app.get('/myAppointmentList/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { userEmail: email};
+            const result = await requestAppointmentCollection.find(query).toArray();
+            res.send(result);
+      })
 
 
     // Send a ping to confirm a successful connection
