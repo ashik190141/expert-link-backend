@@ -27,10 +27,18 @@ async function run() {
     const usersCollection = client.db('expertLink').collection('users');
     const serviceCollection = client.db('expertLink').collection('services');
 
-
+    // common
+    // create users
     app.post('/users', async (req, res) => {
       const user = req.body;
       const result = await usersCollection.insertOne(user);
+      res.send(result);
+    })
+    //all consultant
+    app.get('/consultants', async (req, res) => {
+      const query = { role: "consultant",  status: "confirm"}
+      console.log(query)
+      const result = await usersCollection.find(query).toArray();
       res.send(result);
     })
 
@@ -70,7 +78,6 @@ async function run() {
       const email = req?.params?.email;
       const query = { email: email }
       const user = await usersCollection.findOne(query);
-      console.log(user)
       const result = { isConsultant: user?.role === 'consultant' && user?.status === 'confirm' }
       res.send(result);
     })
