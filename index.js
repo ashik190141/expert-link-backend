@@ -1,7 +1,7 @@
 const express = require('express');
 const app = express();
 const cors = require('cors');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config()
 const port = process.env.PORT || 5000;
 
@@ -52,6 +52,27 @@ async function run() {
           console.log(user)
           const result = { isConsultant: user?.role === 'consultant' && user?.status === 'confirm'}
           res.send(result);
+        })
+      
+      // manage users
+      app.get('/allUsers', async (req, res) => {
+        const result = await usersCollection.find().toArray();
+        //   for (let i = 0; i < result.length; i++){
+        //       console.log(result.status);
+        //   }
+        res.send(result);
+      })
+
+      app.patch('/users/makeConsultant/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) };
+            const updatedDoc = {
+              $set: {
+                status: "confirm"
+              }
+            }
+            const result = await usersCollection.updateOne(filter, updatedDoc);
+            res.send(result);
       })
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
