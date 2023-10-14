@@ -42,18 +42,6 @@ async function run() {
           const result = { isAdmin: user?.role === 'admin'}
           res.send(result);
       })
-
-      /* Consultant related api */
-        // check consultant
-        app.get('/users/consultant/:email', async (req, res) => {
-          const email = req?.params?.email;
-          const query = { email: email }
-          const user = await usersCollection.findOne(query);
-          console.log(user)
-          const result = { isConsultant: user?.role === 'consultant' && user?.status === 'confirm'}
-          res.send(result);
-        })
-      
       // manage users
       app.get('/allUsers', async (req, res) => {
         const result = await usersCollection.find().toArray();
@@ -74,6 +62,24 @@ async function run() {
             const result = await usersCollection.updateOne(filter, updatedDoc);
             res.send(result);
       })
+
+      /* Consultant related api */
+        // check consultant
+        app.get('/users/consultant/:email', async (req, res) => {
+          const email = req?.params?.email;
+          const query = { email: email }
+          const user = await usersCollection.findOne(query);
+          console.log(user)
+          const result = { isConsultant: user?.role === 'consultant' && user?.status === 'confirm'}
+          res.send(result);
+        })
+        //consultant details
+      app.get('/consultantdetails/:email', async (req, res) => {
+        const email = req.params.email;
+        const query = { email: email };
+        const result = await usersCollection.findOne(query);
+        res.send(result);
+    })
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
