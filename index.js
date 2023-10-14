@@ -42,6 +42,14 @@ async function run() {
       res.send(result);
     })
 
+    //all services
+    app.get('/services', async (req, res) => {
+      const query = { status: "Approved"}
+      console.log(query)
+      const result = await serviceCollection.find(query).toArray();
+      res.send(result);
+    })
+
     /* Admin related api */
     // check admin
     app.get('/users/admin/:email', async (req, res) => {
@@ -94,6 +102,8 @@ async function run() {
       const result = await serviceCollection.insertOne(newService)
       res.send(result)
   })
+
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
