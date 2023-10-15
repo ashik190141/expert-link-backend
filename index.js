@@ -159,7 +159,7 @@ async function run() {
 
     app.get('/myFavServices/:email', async (req, res) => {
       const email = req.params.email;
-      const query = { email: email };
+      const query = { customerEmail: email, };
       const result = await bookServicesCollection.find(query).toArray();
       res.send(result);
     })
@@ -172,7 +172,7 @@ async function run() {
 
     app.get('/myAppointment/:email', async (req, res) => {
       const email = req.params.email;
-      const query = { consultantEmail: email };
+      const query = { consultantMail: email };
       const result = await requestAppointmentCollection.find(query).toArray();
       res.send(result);
     })
@@ -203,7 +203,7 @@ async function run() {
 
     app.get('/myAppointmentList/:email', async (req, res) => {
       const email = req.params.email;
-      const query = { userEmail: email };
+      const query = { customerEmail: email, paymentStatus: "unpaid" };
       const result = await requestAppointmentCollection.find(query).toArray();
       res.send(result);
     })
@@ -222,16 +222,16 @@ async function run() {
       console.log(price)
       const amount = parseInt(price * 100);
       const paymentIntent = await stripe.paymentIntents.create({
-          amount: amount,
-          currency: 'usd',
-          payment_method_types: ['card']
+        amount: amount,
+        currency: 'usd',
+        payment_method_types: ['card']
       });
       // store history
       app.post('/payments', async (req, res) => {
         const payment = req.body;
         const result = await userPayemntCollection.insertOne(payment);
         res.send(result);
-    })
+      })
 
       // Update Class Status
       app.patch('/users/customer/paidservices/:id', async (req, res) => {
@@ -241,20 +241,34 @@ async function run() {
         const filter = { _id: new ObjectId(id) };
         const result = await requestAppointmentCollection.findOne(filter);
         const updateDoc = {
-            $set: {
-                paymentStatus: paymentStatus,
-            },
+          $set: {
+            paymentStatus: paymentStatus,
+          },
         };
         const updatedResult = await requestAppointmentCollection.updateOne(filter, updateDoc);
         res.send(updatedResult);
 
-    })
+      })
 
       res.send({
-          clientSecret: paymentIntent.client_secret
+        clientSecret: paymentIntent.client_secret
       })
       // console.log(paymentIntent.client_secret)
-  })
+    })
+
+    app.get('/myTakenAppointmentList/:email', async (req, res) => {
+      const email = req.params.email;
+      const query = { customerEmail: email, paymentStatus: "paid" };
+      const result = await requestAppointmentCollection.find(query).toArray();
+      res.send(result);
+    })
+    // Payment History
+    app.get('/paymenthistory', async (req, res) => {
+      const email = req.query.email;
+      const query = { email: email }
+      const result = await userPayemntCollection.find(query).sort({ date: -1 }).toArray();
+      res.send(result);
+  });
 
 
     // Send a ping to confirm a successful connection
